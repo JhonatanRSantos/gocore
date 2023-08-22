@@ -1,0 +1,2 @@
+root: "github.com/JhonatanRSantos/gocore"
+exclusions: [docs]
