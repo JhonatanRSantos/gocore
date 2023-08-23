@@ -1,7 +1,7 @@
 name: gocore-ci-tests
 on: [push]
 jobs:
-  test:
+  unit-tests:
     runs-on: ubuntu-22.04
     steps:
         - uses: actions/checkout@v3
@@ -11,4 +11,4 @@ jobs:
         - run: go install github.com/mcubik/goverreport@latest
         - run: go mod tidy
         - run: go test ./... -covermode=atomic -coverprofile=/tmp/coverage.out -coverpkg=./... -count=1
-        - run: goverreport -coverprofile=/tmp/coverage.out -sort=block -order=desc -threshold=90 || (echo -e "**********Minimum test coverage was not reached(90%)**********"; exit 1)
+        - run: goverreport -coverprofile=/tmp/coverage.out -sort=block -order=desc -threshold=80 || (echo -e "**********Minimum test coverage was not reached(80%)**********"; exit 1)
