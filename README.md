@@ -10,7 +10,6 @@ Go Core provides a series of common packages to build and deploy Go applications
 * [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports)
 * [goverreport](https://github.com/mcubik/goverreport)
 * [pre-commit](https://pre-commit.com)
-* [swag](https://github.com/swaggo/swag)
 
 ## Run
 

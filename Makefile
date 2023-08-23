@@ -13,12 +13,6 @@ install_deps:
 	@echo If "(pre-commit install)" fails try to restar your terminal and run it manually
 	pre-commit install
 
-	@echo "Installing swag"
-	go install github.com/swaggo/swag/cmd/swag@latest
-
-swagger:
-	swag init  --parseInternal --parseDependency --parseDepth 3 --exclude /usr -d cmd/
-
 lint:
 	@echo "Running linters"
 	gofmt -w . && goimports -w .
