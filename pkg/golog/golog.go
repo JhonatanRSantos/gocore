@@ -50,10 +50,12 @@ type Logger struct {
 	zapLogger   *zap.Logger
 }
 
+// SetEnv Set the environment config
 func SetEnv(env goenv.Env) {
 	logEnvironment = env
 }
 
+// Log Creats a new logger
 func Log() *Logger {
 	init := func() {
 		if logger == nil {
