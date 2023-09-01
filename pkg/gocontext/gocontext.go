@@ -42,7 +42,8 @@ func Get[T constraints.Integer | constraints.Float | ~string | ~bool](ctx contex
 			return any(ctxValue).(T), true
 		}
 	}
-	return any("").(T), false
+	var result T
+	return result, false
 }
 
 // GetKeys Get all context keys
