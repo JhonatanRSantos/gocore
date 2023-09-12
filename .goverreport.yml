@@ -1,2 +1,2 @@
 root: "github.com/JhonatanRSantos/gocore"
-exclusions: [docs]
+exclusions: [docs, /pkg/godb/pgdb]
