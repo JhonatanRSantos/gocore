@@ -2,6 +2,7 @@ package godb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -87,10 +88,13 @@ func connect(ctx context.Context, cancel context.CancelFunc, dbType, dsn string)
 
 	<-ctx.Done()
 	switch {
+	case err != nil:
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, ErrConnectionTimeoutExceeded
+		}
+		return nil, err
 	case db != nil:
 		return db, nil
-	case err != nil:
-		return nil, err
 	default:
 		return nil, ErrConnectionTimeoutExceeded
 	}
