@@ -16,7 +16,7 @@ install_deps:
 lint:
 	@echo "Running linters"
 	gofmt -w . && goimports -w .
-	golangci-lint run --max-issues-per-linter=0 --max-same-issues=0 --config=./.golangci.yaml ./cmd/...
+	golangci-lint run --max-issues-per-linter=0 --max-same-issues=0 --config=./.golangci.yaml ./pkg/...
 
 pre_coverage_tests:
 	@./scripts/test-db-up.sh
