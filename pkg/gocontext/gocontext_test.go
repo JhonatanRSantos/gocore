@@ -5,6 +5,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
 
@@ -27,7 +28,7 @@ func TestFromContext(t *testing.T) {
 			},
 			assert: func(ctx context.Context) {
 				if _, ok := ctx.Value(contextKey).(*sync.Map); !ok {
-					t.Fatal("failed to create new gocontext")
+					assert.FailNow(t, "failed to create new gocontext")
 				}
 			},
 		},
@@ -40,7 +41,7 @@ func TestFromContext(t *testing.T) {
 			},
 			assert: func(ctx context.Context) {
 				if value, ok := Get[string](ctx, "test-key"); !ok || value != "test-value" {
-					t.Fatal("failed to get context key")
+					assert.FailNow(t, "failed to get context key")
 				}
 			},
 		},
@@ -76,11 +77,11 @@ func TestGetKeys(t *testing.T) {
 			},
 			assert: func(keys []string) {
 				if len(keys) <= 0 {
-					t.Fatal("failed to get context keys")
+					assert.FailNow(t, "failed to get context keys")
 				}
 
 				if !slices.Contains(keys, "test-key") {
-					t.Fatal("failed to get test key from context")
+					assert.FailNow(t, "failed to get test key from context")
 				}
 			},
 		},
@@ -118,7 +119,7 @@ func TestDelete(t *testing.T) {
 			},
 			assert: func(ctx context.Context, key string) {
 				if _, ok := Get[string](ctx, key); ok {
-					t.Fatal("failed to delete context value")
+					assert.FailNow(t, "failed to delete context value")
 				}
 			},
 		},

@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/JhonatanRSantos/gocore/pkg/goenv"
+	"github.com/stretchr/testify/assert"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 )
@@ -19,7 +21,7 @@ func TestLog(t *testing.T) {
 	initLogOnce = sync.Once{}
 
 	if Log() == nil {
-		t.Fatal("expected non nil logger for test env")
+		assert.FailNow(t, "expected non nil logger for test env")
 	}
 
 	SetEnv(goenv.Production)
@@ -27,7 +29,7 @@ func TestLog(t *testing.T) {
 	initLogOnce = sync.Once{}
 
 	if Log() == nil {
-		t.Fatal("expected non nil logger for production env")
+		assert.FailNow(t, "expected non nil logger for production env")
 	}
 }
 func TestLogger(t *testing.T) {
@@ -54,7 +56,7 @@ func TestLogger(t *testing.T) {
 				initLogOnce = sync.Once{}
 				read, write, err := os.Pipe()
 				if err != nil {
-					t.Fatalf("failed to create pipe file. Cause: %v", err)
+					assert.FailNow(t, "failed to create pipe file. Cause: %v", err)
 				}
 				logWriter = write
 				return read, write, nil
@@ -72,9 +74,9 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case err != nil:
-					t.Fatalf("failed to read from stdout. Cause: %s", err)
+					assert.FailNow(t, "failed to read from stdout. Cause: %s", err)
 				case !strings.Contains(string(out), "[  INFO  ]"):
-					t.Fatalf("the expected output must have: '[  INFO  ]' but got: '%s'", string(out))
+					assert.FailNow(t, "the expected output must have: '[  INFO  ]' but got: '%s'", string(out))
 				}
 			},
 		},
@@ -87,7 +89,7 @@ func TestLogger(t *testing.T) {
 				initLogOnce = sync.Once{}
 				read, write, err := os.Pipe()
 				if err != nil {
-					t.Fatalf("failed to create pipe file. Cause: %v", err)
+					assert.FailNow(t, "failed to create pipe file. Cause: %v", err)
 				}
 				logWriter = write
 				return read, write, nil
@@ -105,9 +107,9 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case err != nil:
-					t.Fatalf("failed to read from stdout. Cause: %s", err)
+					assert.FailNow(t, "failed to read from stdout. Cause: %s", err)
 				case !strings.Contains(string(out), "[  WARN  ]"):
-					t.Fatalf("the expected output must have: '[  WARN  ]' but got: '%s'", string(out))
+					assert.FailNow(t, "the expected output must have: '[  WARN  ]' but got: '%s'", string(out))
 				}
 			},
 		},
@@ -120,7 +122,7 @@ func TestLogger(t *testing.T) {
 				initLogOnce = sync.Once{}
 				read, write, err := os.Pipe()
 				if err != nil {
-					t.Fatalf("failed to create pipe file. Cause: %v", err)
+					assert.FailNow(t, "failed to create pipe file. Cause: %v", err)
 				}
 				logWriter = write
 				return read, write, nil
@@ -138,9 +140,9 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case err != nil:
-					t.Fatalf("failed to read from stdout. Cause: %s", err)
+					assert.FailNow(t, "failed to read from stdout. Cause: %s", err)
 				case !strings.Contains(string(out), "[  DEBUG ]"):
-					t.Fatalf("the expected output must have: '[  DEBUG ]' but got: '%s'", string(out))
+					assert.FailNow(t, "the expected output must have: '[  DEBUG ]' but got: '%s'", string(out))
 				}
 			},
 		},
@@ -153,7 +155,7 @@ func TestLogger(t *testing.T) {
 				initLogOnce = sync.Once{}
 				read, write, err := os.Pipe()
 				if err != nil {
-					t.Fatalf("failed to create pipe file. Cause: %v", err)
+					assert.FailNow(t, "failed to create pipe file. Cause: %v", err)
 				}
 				logWriter = write
 				return read, write, nil
@@ -171,9 +173,9 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case err != nil:
-					t.Fatalf("failed to read from stdout. Cause: %s", err)
+					assert.FailNow(t, "failed to read from stdout. Cause: %s", err)
 				case !strings.Contains(string(out), "[  ERROR ]"):
-					t.Fatalf("the expected output must have: '[  ERROR ]' but got: '%s'", string(out))
+					assert.FailNow(t, "the expected output must have: '[  ERROR ]' but got: '%s'", string(out))
 				}
 			},
 		},
@@ -206,16 +208,16 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case amountOfLogs > 1:
-					t.Fatalf("invalid amount of logs. Expected 1, but got %d", amountOfLogs)
+					assert.FailNow(t, "invalid amount of logs. Expected 1, but got %d", amountOfLogs)
 				case logs[0].Level != zap.InfoLevel:
-					t.Fatalf("invalid log level. Expected info, but got %s", logs[0].Level)
+					assert.FailNow(t, "invalid log level. Expected info, but got %s", logs[0].Level)
 				case logs[0].Message != input.message:
-					t.Fatalf("invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
+					assert.FailNow(t, "invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
 				}
 
 				for k, v := range logs[0].ContextMap() {
 					if value, ok := expectedTags[k]; !ok || value != v {
-						t.Fatal("the expected tags doesn't match")
+						assert.FailNow(t, "the expected tags doesn't match")
 					}
 				}
 			},
@@ -249,16 +251,16 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case amountOfLogs > 1:
-					t.Fatalf("invalid amount of logs. Expected 1, but got %d", amountOfLogs)
+					assert.FailNow(t, "invalid amount of logs. Expected 1, but got %d", amountOfLogs)
 				case logs[0].Level != zap.WarnLevel:
-					t.Fatalf("invalid log level. Expected info, but got %s", logs[0].Level)
+					assert.FailNow(t, "invalid log level. Expected info, but got %s", logs[0].Level)
 				case logs[0].Message != input.message:
-					t.Fatalf("invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
+					assert.FailNow(t, "invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
 				}
 
 				for k, v := range logs[0].ContextMap() {
 					if value, ok := expectedTags[k]; !ok || value != v {
-						t.Fatal("the expected tags doesn't match")
+						assert.FailNow(t, "the expected tags doesn't match")
 					}
 				}
 			},
@@ -292,16 +294,16 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case amountOfLogs > 1:
-					t.Fatalf("invalid amount of logs. Expected 1, but got %d", amountOfLogs)
+					assert.FailNow(t, "invalid amount of logs. Expected 1, but got %d", amountOfLogs)
 				case logs[0].Level != zap.DebugLevel:
-					t.Fatalf("invalid log level. Expected info, but got %s", logs[0].Level)
+					assert.FailNow(t, "invalid log level. Expected info, but got %s", logs[0].Level)
 				case logs[0].Message != input.message:
-					t.Fatalf("invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
+					assert.FailNow(t, "invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
 				}
 
 				for k, v := range logs[0].ContextMap() {
 					if value, ok := expectedTags[k]; !ok || value != v {
-						t.Fatal("the expected tags doesn't match")
+						assert.FailNow(t, "the expected tags doesn't match")
 					}
 				}
 			},
@@ -335,16 +337,16 @@ func TestLogger(t *testing.T) {
 
 				switch {
 				case amountOfLogs > 1:
-					t.Fatalf("invalid amount of logs. Expected 1, but got %d", amountOfLogs)
+					assert.FailNow(t, "invalid amount of logs. Expected 1, but got %d", amountOfLogs)
 				case logs[0].Level != zap.ErrorLevel:
-					t.Fatalf("invalid log level. Expected info, but got %s", logs[0].Level)
+					assert.FailNow(t, "invalid log level. Expected info, but got %s", logs[0].Level)
 				case logs[0].Message != input.message:
-					t.Fatalf("invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
+					assert.FailNow(t, "invalid log message. Expected %s, but got %s", input.message, logs[0].Message)
 				}
 
 				for k, v := range logs[0].ContextMap() {
 					if value, ok := expectedTags[k]; !ok || value != v {
-						t.Fatal("the expected tags doesn't match")
+						assert.FailNow(t, "the expected tags doesn't match")
 					}
 				}
 			},
