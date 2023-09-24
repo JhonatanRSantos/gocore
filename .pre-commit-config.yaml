@@ -16,18 +16,29 @@ repos:
           - --max-same-issues=0
           - --config=.golangci.yaml
           - --new-from-rev=HEAD~1 # comment this arg if you want to run pre-commit run --all-files
+  
   - repo: local
     hooks:
+      - id: prepare-database-container
+        name: Prepare DB Containers
+        entry: ./scripts/test-db-pre-commit.sh 
+        language: script
+
       - id: golang-clean-tests
         name: Go Clean Tests
         entry: go clean -testcache
         pass_filenames: false
         types: [go]
         language: system
-
+    
       - id: golang-unit-tests
         name: Go Unit Tests
         entry: go test ./... -covermode=atomic -coverprofile=/tmp/coverage.out -coverpkg=./... -count=1	
         pass_filenames: false
         types: [go]
         language: system
+
+      - id: remove-database-container
+        name: Remove DB Containers
+        entry: ./scripts/test-db-down.sh
+        language: script

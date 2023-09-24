@@ -18,9 +18,16 @@ lint:
 	gofmt -w . && goimports -w .
 	golangci-lint run --max-issues-per-linter=0 --max-same-issues=0 --config=./.golangci.yaml ./cmd/...
 
-coverage_tests:
-	echo "Running tests"
+pre_coverage_tests:
+	@./scripts/test-db-up.sh
+
+coverage_tests: pre_coverage_tests
+	@echo "Running tests"
 	go clean -testcache
-	go test ./... -covermode=atomic -coverprofile=/tmp/coverage.out -coverpkg=./... -count=1	
+	go test ./... -covermode=atomic -coverprofile=/tmp/coverage.out -coverpkg=./... -count=1
+	@make post_coverage_tests
 	goverreport -coverprofile=/tmp/coverage.out -sort=block -order=desc -threshold=80 || (echo -e "**********Minimum test coverage was not reached(80%)**********"; exit 1)
 	go tool cover -html=/tmp/coverage.out
+
+post_coverage_tests:
+	@./scripts/test-db-down.sh
