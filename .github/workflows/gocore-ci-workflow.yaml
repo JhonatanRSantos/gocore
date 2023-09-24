@@ -6,6 +6,37 @@ on:
 jobs:
   unit-tests:
     runs-on: ubuntu-22.04
+    services:
+
+      pg-test-db:
+        image: postgres:15.4
+        env:
+          POSTGRES_DB: test-db
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: qwerty
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      mysql-test-db:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: test-db
+          MYSQL_USER: admin
+          MYSQL_PASSWORD: qwerty
+          MYSQL_ROOT_PASSWORD: qwerty
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-go@v4
