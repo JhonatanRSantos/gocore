@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//nolint:dupl
+// nolint:dupl
 func TestMySQLDB(t *testing.T) {
 	var (
 		db           *sqlx.DB
@@ -84,7 +84,7 @@ func TestMySQLDB(t *testing.T) {
 	}
 }
 
-//nolint:dupl
+// nolint:dupl
 func TestPostgres(t *testing.T) {
 	var (
 		db           *sqlx.DB
@@ -161,7 +161,7 @@ func TestPostgres(t *testing.T) {
 	}
 }
 
-//nolint:dupl
+// nolint:dupl
 func TestSQLiteDB(t *testing.T) {
 	var (
 		db           *sqlx.DB
