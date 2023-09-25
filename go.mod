@@ -7,7 +7,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/gofiber/swagger v0.1.12
 	github.com/gofrs/uuid/v5 v5.0.0
-	github.com/jmoiron/sqlx v1.2.0
+	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/stretchr/testify v1.8.4
