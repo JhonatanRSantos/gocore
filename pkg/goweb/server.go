@@ -148,7 +148,7 @@ func DefaultConfig(config WebServerDefaultConfig) *WebServerConfig {
 
 // isNil check if the webserver config is nil
 func (wsc *WebServerConfig) isNil() bool {
-	return wsc.app == nil || wsc.routers == nil || wsc.swaggerConfig == (WebServerSwaggerConfig{})
+	return wsc.app == nil || wsc.routers == nil
 }
 
 // NewWebServer Creates a new web server based using a given configuration
@@ -234,7 +234,10 @@ func (ws *WebServer) swaggerUI() {
 // Listen Start the web server
 func (ws *WebServer) Listen(address string) error {
 	ws.gracefulShutdown()
-	ws.swaggerUI()
+
+	if ws.swaggerConfig != (WebServerSwaggerConfig{}) {
+		ws.swaggerUI()
+	}
 
 	if ws.routers != nil && len(ws.routers) > 0 {
 		for _, route := range ws.routers {
