@@ -1,4 +1,4 @@
-package webserver
+package goweb
 
 import (
 	"context"
@@ -89,14 +89,13 @@ func DefaultConfig(config WebServerDefaultConfig) *WebServerConfig {
 		CompressedFileSuffix:  fmt.Sprintf(".%s.gz", config.AppName),
 		DisableStartupMessage: true,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			var message string
-			if _, ok := gocontext.Get[string](c.UserContext(), "panic-error"); ok {
-				message = fmt.Sprintf("Recovered from panic. Cause: %s", err)
-			} else {
-				message = fmt.Sprintf("Unexpected error. Cause: %s", err)
-			}
-
 			if config.Logger != nil {
+				var message string
+				if _, ok := gocontext.Get[string](c.UserContext(), "panic-error"); ok {
+					message = fmt.Sprintf("Recovered from panic. Cause: %s", err)
+				} else {
+					message = fmt.Sprintf("Unexpected error. Cause: %s", err)
+				}
 				config.Logger.Error(c.Context(), message)
 			}
 			return c.SendStatus(http.StatusInternalServerError)
