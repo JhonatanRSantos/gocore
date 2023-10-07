@@ -78,6 +78,7 @@ func TestWebServer(t *testing.T) {
 	resp, err = http.Get(fmt.Sprintf("http://localhost:%d/swagger", port))
 	assert.NoErrorf(t, err, "failed to GET /. Cause: %s", err)
 	defer resp.Body.Close()
+
 	assert.Equalf(t, http.StatusOK, resp.StatusCode, "invalid status code when calling GET /. Expected 200 but got %d", resp.StatusCode)
 
 	resp, err = http.Get(fmt.Sprintf("http://localhost:%d/panic", port))
