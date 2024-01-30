@@ -1,8 +1,10 @@
+GO_PATH=$(shell go env GOPATH)
+
 install_deps:
 	@echo "Installing go deps"
 	@go mod tidy
 	@echo "Installing linters..."
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.53.3
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GO_PATH)/bin v1.53.3
 	go install golang.org/x/tools/cmd/goimports@latest
 
 	@echo "Installing report tools"
@@ -16,7 +18,7 @@ install_deps:
 lint:
 	@echo "Running linters"
 	gofmt -w . && goimports -w .
-	golangci-lint run --max-issues-per-linter=0 --max-same-issues=0 --config=./.golangci.yaml ./pkg/...
+	golangci-lint run --max-issues-per-linter=0 --max-same-issues=0 --config=.golangci.yaml --new-from-rev=HEAD~1 --verbose ./pkg/...
 
 pre_coverage_tests:
 	@./scripts/test-db-up.sh

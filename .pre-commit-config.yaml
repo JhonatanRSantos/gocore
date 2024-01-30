@@ -3,19 +3,24 @@ repos:
     rev: v2.3.0
     hooks:
       - id: pretty-format-golang
+        name: Format golang code
         args:
           - --autofix
   
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.47.2
+    rev: v1.53.3
     hooks:
       - id: golangci-lint
+        name: Check lint issues
         entry: golangci-lint run
         args:
           - --max-issues-per-linter=0
           - --max-same-issues=0
           - --config=.golangci.yaml
           - --new-from-rev=HEAD~1 # comment this arg if you want to run pre-commit run --all-files
+          # - --verbose
+          - ./pkg/...
+        # verbose: true
   
   - repo: local
     hooks:

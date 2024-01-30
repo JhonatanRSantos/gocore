@@ -13,7 +13,8 @@ import (
 	"github.com/JhonatanRSantos/gocore/pkg/gocontext"
 	"github.com/JhonatanRSantos/gocore/pkg/golog"
 
-	"github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v2"
+
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -28,19 +29,21 @@ const (
 	defaultSwaggerRoute = "/swagger/*"
 )
 
-type WebRouter interface {
-	Start()
+type WebRoute struct {
+	Method   string
+	Path     string
+	Handlers []func(c *fiber.Ctx) error
 }
 
 type WebServer struct {
 	app           *fiber.App
-	routers       []WebRouter
+	routers       []WebRoute
 	swaggerConfig WebServerSwaggerConfig
 }
 
 type WebServerConfig struct {
 	app           *fiber.App
-	routers       []WebRouter
+	routers       []WebRoute
 	swaggerConfig WebServerSwaggerConfig
 }
 
@@ -141,7 +144,7 @@ func DefaultConfig(config WebServerDefaultConfig) *WebServerConfig {
 
 	return &WebServerConfig{
 		app:           app,
-		routers:       []WebRouter{},
+		routers:       []WebRoute{},
 		swaggerConfig: config.Swagger,
 	}
 }
@@ -176,9 +179,9 @@ func (ws *WebServer) GetApp() *fiber.App {
 }
 
 // AddRoutes Add a new web route
-func (ws *WebServer) AddRoutes(routes ...WebRouter) {
+func (ws *WebServer) AddRoutes(routes ...WebRoute) {
 	if ws.routers == nil {
-		ws.routers = []WebRouter{}
+		ws.routers = []WebRoute{}
 	}
 
 	ws.routers = append(ws.routers, routes...)
@@ -241,7 +244,7 @@ func (ws *WebServer) Listen(address string) error {
 
 	if ws.routers != nil && len(ws.routers) > 0 {
 		for _, route := range ws.routers {
-			route.Start()
+			ws.app.Add(route.Method, route.Path, route.Handlers...)
 		}
 	}
 	return ws.app.Listen(address)
