@@ -9,23 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v2"
+
 	"github.com/stretchr/testify/assert"
 )
-
-type webRouter struct {
-	app *fiber.App
-}
-
-func (wr *webRouter) Start() {
-	group := wr.app.Group("/")
-	group.Get("/", func(c *fiber.Ctx) error {
-		return c.SendStatus(200)
-	})
-	group.Get("/panic", func(c *fiber.Ctx) error {
-		panic(errors.New("panic webserver"))
-	})
-}
 
 func TestWebServer(t *testing.T) {
 	ws := NewWebServer(nil)
@@ -44,7 +31,29 @@ func TestWebServer(t *testing.T) {
 			EndpointPrefix: "debug",
 		},
 	}))
-	ws.AddRoutes(&webRouter{ws.GetApp()})
+
+	baseHandler := func(c *fiber.Ctx) error {
+		return c.SendStatus(200)
+	}
+
+	panicHandler := func(c *fiber.Ctx) error {
+		panic(errors.New("panic webserver"))
+	}
+
+	routes := []WebRoute{
+		{
+			Method:   "GET",
+			Path:     "/",
+			Handlers: []func(c *fiber.Ctx) error{baseHandler},
+		},
+		{
+			Method:   "GET",
+			Path:     "/panic",
+			Handlers: []func(c *fiber.Ctx) error{panicHandler},
+		},
+	}
+
+	ws.AddRoutes(routes...)
 
 	listener, err := net.Listen("tcp", ":0")
 	assert.NoErrorf(t, err, "failed to get net listener. Cause: %s", err)
