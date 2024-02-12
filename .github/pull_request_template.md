@@ -1,5 +1,3 @@
-# Pull Request
-
 ## Description
 
 <!--- Describe your changes in detail -->
@@ -17,16 +15,11 @@
 
 ## Mandatory Checklist
 
-- [ ] My change has been tested (local and/or staging).
+- [ ] My change has been tested.
 - [ ] I Have added functional and coverage tests (with real test values and using constants if available). 
 - [ ] I have updated the CHANGELOG (changelog.md).
-- [ ] I have logged the work hours on Jira.
 
-## Conditionally Mandatory Checklist
+## Conditionally Checklist
 
 - [ ] My Pull Request contains metrics to monitor and analyze change behavior at runtime.
 - [ ] I have generated docs.
-
-## External Links
-
-[XXXX](https://space.atlassian.net/browse/XXXX)
