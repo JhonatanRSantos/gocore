@@ -75,7 +75,7 @@ func Test_NamedStmt(t *testing.T) {
 				}
 
 				customNamedStmt := customNamedStmt{namedStmt: namedStmt.Safe()}
-				customNamedStmt.Exec(map[string]interface{}{"name": "John Doe"})
+				_, _ = customNamedStmt.Exec(map[string]interface{}{"name": "John Doe"})
 				assert.NoError(t, customNamedStmt.Close(), "failed to close named statement")
 			},
 		},

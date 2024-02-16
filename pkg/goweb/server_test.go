@@ -11,6 +11,7 @@ import (
 
 	fiber "github.com/gofiber/fiber/v2"
 
+	"github.com/bytedance/sonic"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,6 +30,10 @@ func TestWebServer(t *testing.T) {
 		},
 		Profiling: ProfilingConfig{
 			EndpointPrefix: "debug",
+		},
+		JSONConfig: JSONConfig{
+			Encoder: sonic.Marshal,
+			Decoder: sonic.Unmarshal,
 		},
 	}))
 
