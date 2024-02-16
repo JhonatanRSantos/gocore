@@ -2,6 +2,7 @@ package goweb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -76,6 +77,11 @@ type WebServerLogger interface {
 	Error(ctx context.Context, message string, opts ...golog.Options)
 }
 
+type JSONConfig struct {
+	Encoder func(v interface{}) ([]byte, error)
+	Decoder func(data []byte, v interface{}) error
+}
+
 type WebServerDefaultConfig struct {
 	AppName    string
 	Cors       CorsConfig
@@ -83,6 +89,7 @@ type WebServerDefaultConfig struct {
 	RateLimite RateLimiteConfig
 	Profiling  ProfilingConfig
 	Logger     WebServerLogger
+	JSONConfig JSONConfig
 }
 
 // DefaultConfig Build the web server default configurations
@@ -105,6 +112,22 @@ func DefaultConfig(config WebServerDefaultConfig) *WebServerConfig {
 		},
 		// ReadTimeout:  time.Second * 5, // max time for reading the request
 		// WriteTimeout: time.Second * 5, // max time for write the response
+		JSONEncoder: func(v interface{}) ([]byte, error) {
+			switch {
+			case config.JSONConfig.Encoder != nil:
+				return config.JSONConfig.Encoder(v)
+			default:
+				return json.Marshal(v)
+			}
+		},
+		JSONDecoder: func(data []byte, v interface{}) error {
+			switch {
+			case config.JSONConfig.Decoder != nil:
+				return config.JSONConfig.Decoder(data, v)
+			default:
+				return json.Unmarshal(data, v)
+			}
+		},
 	})
 
 	app.Use(favicon.New())

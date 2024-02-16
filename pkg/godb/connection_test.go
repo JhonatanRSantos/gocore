@@ -91,7 +91,7 @@ func Test_Conn(t *testing.T) {
 			assert: func(t *testing.T, conn customConn) {
 				stmt, err := conn.PrepareContext(context.Background(), "SELECT 1")
 				assert.NoError(t, err)
-				stmt.Exec()
+				_, _ = stmt.Exec()
 				assert.NoError(t, stmt.Close())
 			},
 		},

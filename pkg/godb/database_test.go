@@ -41,6 +41,7 @@ var (
 	}
 )
 
+// nolint:dupl
 func Test_MySQLDB(t *testing.T) {
 	var (
 		db           DB
@@ -108,6 +109,7 @@ func Test_MySQLDB(t *testing.T) {
 	}
 }
 
+// nolint:dupl
 func Test_PostgresDB(t *testing.T) {
 	var (
 		db           DB
