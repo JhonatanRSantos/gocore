@@ -12,6 +12,8 @@ import (
 // DBMock is a mock implementation of the sql.DB interface.
 type DBMock struct {
 	Error                       error
+	CallbackpopTestError        func() error
+	CallbackpushTestError       func(err error)
 	CallbackClose               func() error
 	CallbackDriver              func() driver.Driver
 	CallbackExec                func(query string, args ...any) (sql.Result, error)
@@ -57,6 +59,21 @@ type DBMock struct {
 // NewMockDB creates a new instance of DBMock.
 func NewMockDB() *DBMock {
 	return &DBMock{}
+}
+
+// popTestError
+func (dbm *DBMock) popTestError() error {
+	if dbm.CallbackpopTestError != nil {
+		return dbm.CallbackpopTestError()
+	}
+	return dbm.Error
+}
+
+// pushTestError
+func (dbm *DBMock) pushTestError(err error) {
+	if dbm.CallbackpushTestError != nil {
+		dbm.CallbackpushTestError(err)
+	}
 }
 
 // Close calls the callback function CallbackClose if it is set.
