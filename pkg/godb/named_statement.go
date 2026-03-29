@@ -15,42 +15,42 @@ type NamedStmt interface {
 	Close() error
 	// Exec executes a named statement using the struct passed.
 	// Any named placeholder parameters are replaced with fields from arg.
-	Exec(arg interface{}) (sql.Result, error)
+	Exec(arg any) (sql.Result, error)
 	// ExecContext executes a named statement using the struct passed.
 	// Any named placeholder parameters are replaced with fields from arg.
-	ExecContext(ctx context.Context, arg interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, arg any) (sql.Result, error)
 	// Get using this NamedStmt
 	// Any named placeholder parameters are replaced with fields from arg.
-	Get(dest interface{}, arg interface{}) error
+	Get(dest any, arg any) error
 	// GetContext using this NamedStmt
 	// Any named placeholder parameters are replaced with fields from arg.
-	GetContext(ctx context.Context, dest interface{}, arg interface{}) error
+	GetContext(ctx context.Context, dest any, arg any) error
 	// MustExec execs a NamedStmt, panicing on error
 	// Any named placeholder parameters are replaced with fields from arg.
-	MustExec(arg interface{}) sql.Result
+	MustExec(arg any) sql.Result
 	// MustExecContext execs a NamedStmt, panicing on error
 	// Any named placeholder parameters are replaced with fields from arg.
-	MustExecContext(ctx context.Context, arg interface{}) sql.Result
+	MustExecContext(ctx context.Context, arg any) sql.Result
 	// QueryRow this NamedStmt.  Because of limitations with QueryRow, this is
 	// an alias for QueryRow.
 	// Any named placeholder parameters are replaced with fields from arg.
-	QueryRow(arg interface{}) Row
+	QueryRow(arg any) Row
 	// QueryRowContext this NamedStmt.  Because of limitations with QueryRow, this is
 	// an alias for QueryRow.
 	// Any named placeholder parameters are replaced with fields from arg.
-	QueryRowContext(ctx context.Context, arg interface{}) Row
+	QueryRowContext(ctx context.Context, arg any) Row
 	// Query using this NamedStmt
 	// Any named placeholder parameters are replaced with fields from arg.
-	Query(arg interface{}) (Rows, error)
+	Query(arg any) (Rows, error)
 	// QueryContext using this NamedStmt
 	// Any named placeholder parameters are replaced with fields from arg.
-	QueryContext(ctx context.Context, arg interface{}) (Rows, error)
+	QueryContext(ctx context.Context, arg any) (Rows, error)
 	// Select using this NamedStmt
 	// Any named placeholder parameters are replaced with fields from arg.
-	Select(dest interface{}, arg interface{}) error
+	Select(dest any, arg any) error
 	// SelectContext using this NamedStmt
 	// Any named placeholder parameters are replaced with fields from arg.
-	SelectContext(ctx context.Context, dest interface{}, arg interface{}) error
+	SelectContext(ctx context.Context, dest any, arg any) error
 	// Unsafe returns an unsafe version of the NamedStmt
 	Unsafe() *sqlx.NamedStmt
 	// Safe returns the underlying named statement
@@ -81,47 +81,47 @@ func (c *customNamedStmt) Close() error {
 }
 
 // Exec
-func (c *customNamedStmt) Exec(arg interface{}) (sql.Result, error) {
+func (c *customNamedStmt) Exec(arg any) (sql.Result, error) {
 	return c.namedStmt.Exec(arg)
 }
 
 // ExecContext
-func (c *customNamedStmt) ExecContext(ctx context.Context, arg interface{}) (sql.Result, error) {
+func (c *customNamedStmt) ExecContext(ctx context.Context, arg any) (sql.Result, error) {
 	return c.namedStmt.ExecContext(ctx, arg)
 }
 
 // Get
-func (c *customNamedStmt) Get(dest interface{}, arg interface{}) error {
+func (c *customNamedStmt) Get(dest any, arg any) error {
 	return c.namedStmt.Get(dest, arg)
 }
 
 // GetContext
-func (c *customNamedStmt) GetContext(ctx context.Context, dest interface{}, arg interface{}) error {
+func (c *customNamedStmt) GetContext(ctx context.Context, dest any, arg any) error {
 	return c.namedStmt.GetContext(ctx, dest, arg)
 }
 
 // MustExec
-func (c *customNamedStmt) MustExec(arg interface{}) sql.Result {
+func (c *customNamedStmt) MustExec(arg any) sql.Result {
 	return c.namedStmt.MustExec(arg)
 }
 
 // MustExecContext
-func (c *customNamedStmt) MustExecContext(ctx context.Context, arg interface{}) sql.Result {
+func (c *customNamedStmt) MustExecContext(ctx context.Context, arg any) sql.Result {
 	return c.namedStmt.MustExecContext(ctx, arg)
 }
 
 // QueryRow
-func (c *customNamedStmt) QueryRow(arg interface{}) Row {
+func (c *customNamedStmt) QueryRow(arg any) Row {
 	return &customRow{row: c.namedStmt.QueryRowx(arg)}
 }
 
 // QueryRowContext
-func (c *customNamedStmt) QueryRowContext(ctx context.Context, arg interface{}) Row {
+func (c *customNamedStmt) QueryRowContext(ctx context.Context, arg any) Row {
 	return &customRow{row: c.namedStmt.QueryRowxContext(ctx, arg)}
 }
 
 // Query
-func (c *customNamedStmt) Query(arg interface{}) (Rows, error) {
+func (c *customNamedStmt) Query(arg any) (Rows, error) {
 	if rows, err := c.query(arg); err != nil {
 		return &customRows{}, err
 	} else {
@@ -130,7 +130,7 @@ func (c *customNamedStmt) Query(arg interface{}) (Rows, error) {
 }
 
 // query
-func (c *customNamedStmt) query(arg interface{}) (*sqlx.Rows, error) {
+func (c *customNamedStmt) query(arg any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -138,7 +138,7 @@ func (c *customNamedStmt) query(arg interface{}) (*sqlx.Rows, error) {
 }
 
 // QueryContext
-func (c *customNamedStmt) QueryContext(ctx context.Context, arg interface{}) (Rows, error) {
+func (c *customNamedStmt) QueryContext(ctx context.Context, arg any) (Rows, error) {
 	if rows, err := c.queryContext(ctx, arg); err != nil {
 		return &customRows{}, err
 	} else {
@@ -147,7 +147,7 @@ func (c *customNamedStmt) QueryContext(ctx context.Context, arg interface{}) (Ro
 }
 
 // queryContext
-func (c *customNamedStmt) queryContext(ctx context.Context, arg interface{}) (*sqlx.Rows, error) {
+func (c *customNamedStmt) queryContext(ctx context.Context, arg any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -155,12 +155,12 @@ func (c *customNamedStmt) queryContext(ctx context.Context, arg interface{}) (*s
 }
 
 // Select
-func (c *customNamedStmt) Select(dest interface{}, arg interface{}) error {
+func (c *customNamedStmt) Select(dest any, arg any) error {
 	return c.namedStmt.Select(dest, arg)
 }
 
 // SelectContext
-func (c *customNamedStmt) SelectContext(ctx context.Context, dest interface{}, arg interface{}) error {
+func (c *customNamedStmt) SelectContext(ctx context.Context, dest any, arg any) error {
 	return c.namedStmt.SelectContext(ctx, dest, arg)
 }
 

@@ -41,7 +41,7 @@ type Conn interface {
 	// GetContext using this godb.Conn.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest any, query string, args ...any) error
 	// PrepareContext returns an godb.Stmt instead of a sql.Stmt.
 	//
 	// The provided context is used for the preparation of the statement, not for
@@ -49,15 +49,15 @@ type Conn interface {
 	PrepareContext(ctx context.Context, query string) (Stmt, error)
 	// QueryRowContext queries the database and returns an godb.Row.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) Row
+	QueryRowContext(ctx context.Context, query string, args ...any) Row
 	// QueryContext queries the database and returns an godb.Rows.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error)
+	QueryContext(ctx context.Context, query string, args ...any) (Rows, error)
 	// Rebind a query within a Conn's bindvar type.
 	Rebind(query string) string
 	// SelectContext using this godb.Conn.
 	// Any placeholder parameters are replaced with supplied args.
-	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	SelectContext(ctx context.Context, dest any, query string, args ...any) error
 }
 
 // customConn defines a new custom connection
@@ -100,11 +100,11 @@ func (c *customConn) Raw(f func(driverConn any) error) (err error) {
 
 // BeginTx
 func (c *customConn) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
-	if tx, err := c.beginTx(ctx, opts); err != nil {
-		return &customTx{}, err
-	} else {
-		return &customTx{tx: tx}, nil
+	tx, err := c.beginTx(ctx, opts)
+	if err != nil {
+		return nil, err
 	}
+	return &customTx{tx: tx}, nil
 }
 
 // beginTx
@@ -116,17 +116,17 @@ func (c *customConn) beginTx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx
 }
 
 // GetContext
-func (c *customConn) GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (c *customConn) GetContext(ctx context.Context, dest any, query string, args ...any) error {
 	return c.conn.GetContext(ctx, dest, query, args...)
 }
 
 // PrepareContext
 func (c *customConn) PrepareContext(ctx context.Context, query string) (Stmt, error) {
-	if stmt, err := c.prepareContext(ctx, query); err != nil {
-		return &customStmt{}, err
-	} else {
-		return &customStmt{stmt: stmt}, nil
+	stmt, err := c.prepareContext(ctx, query)
+	if err != nil {
+		return nil, err
 	}
+	return &customStmt{stmt: stmt}, nil
 }
 
 // prepareContext
@@ -138,21 +138,21 @@ func (c *customConn) prepareContext(ctx context.Context, query string) (*sqlx.St
 }
 
 // QueryRowContext
-func (c *customConn) QueryRowContext(ctx context.Context, query string, args ...interface{}) Row {
+func (c *customConn) QueryRowContext(ctx context.Context, query string, args ...any) Row {
 	return &customRow{row: c.conn.QueryRowxContext(ctx, query, args...)}
 }
 
 // QueryContext
-func (c *customConn) QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error) {
-	if rows, err := c.queryContext(ctx, query, args...); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (c *customConn) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
+	rows, err := c.queryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // queryContext
-func (c *customConn) queryContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+func (c *customConn) queryContext(ctx context.Context, query string, args ...any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -165,6 +165,6 @@ func (c *customConn) Rebind(query string) string {
 }
 
 // SelectContext
-func (c *customConn) SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (c *customConn) SelectContext(ctx context.Context, dest any, query string, args ...any) error {
 	return c.conn.SelectContext(ctx, dest, query, args...)
 }

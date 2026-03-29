@@ -27,37 +27,37 @@ type Stmt interface {
 	// Get using the prepared statement.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	Get(dest interface{}, args ...interface{}) error
+	Get(dest any, args ...any) error
 	// GetContext using the prepared statement.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	GetContext(ctx context.Context, dest interface{}, args ...interface{}) error
+	GetContext(ctx context.Context, dest any, args ...any) error
 	// MustExec (panic) using this statement. Note that the query portion of the error
 	// output will be blank, as Stmt does not expose its query.
 	// Any placeholder parameters are replaced with supplied args.
-	MustExec(args ...interface{}) sql.Result
+	MustExec(args ...any) sql.Result
 	// MustExecContext (panic) using this statement. Note that the query portion of
 	// the error output will be blank, as Stmt does not expose its query.
 	// Any placeholder parameters are replaced with supplied args.
-	MustExecContext(ctx context.Context, args ...interface{}) sql.Result
+	MustExecContext(ctx context.Context, args ...any) sql.Result
 	// QueryRow using this statement.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRow(args ...interface{}) Row
+	QueryRow(args ...any) Row
 	// QueryRowContext using this statement.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRowContext(ctx context.Context, args ...interface{}) Row
+	QueryRowContext(ctx context.Context, args ...any) Row
 	// Query using this statement.
 	// Any placeholder parameters are replaced with supplied args.
-	Query(args ...interface{}) (Rows, error)
+	Query(args ...any) (Rows, error)
 	// QueryContext using this statement.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryContext(ctx context.Context, args ...interface{}) (Rows, error)
+	QueryContext(ctx context.Context, args ...any) (Rows, error)
 	// Select using the prepared statement.
 	// Any placeholder parameters are replaced with supplied args.
-	Select(dest interface{}, args ...interface{}) error
+	Select(dest any, args ...any) error
 	// SelectContext using the prepared statement.
 	// Any placeholder parameters are replaced with supplied args.
-	SelectContext(ctx context.Context, dest interface{}, args ...interface{}) error
+	SelectContext(ctx context.Context, dest any, args ...any) error
 	// Unsafe returns a version of Stmt which will silently succeed to scan when
 	// columns in the SQL result have no fields in the destination struct.
 	Unsafe() *sqlx.Stmt
@@ -99,37 +99,37 @@ func (c *customStmt) ExecContext(ctx context.Context, args ...any) (sql.Result, 
 }
 
 // Get
-func (c *customStmt) Get(dest interface{}, args ...interface{}) error {
+func (c *customStmt) Get(dest any, args ...any) error {
 	return c.stmt.Get(dest, args...)
 }
 
 // GetContext
-func (c *customStmt) GetContext(ctx context.Context, dest interface{}, args ...interface{}) error {
+func (c *customStmt) GetContext(ctx context.Context, dest any, args ...any) error {
 	return c.stmt.GetContext(ctx, dest, args...)
 }
 
 // MustExec
-func (c *customStmt) MustExec(args ...interface{}) sql.Result {
+func (c *customStmt) MustExec(args ...any) sql.Result {
 	return c.stmt.MustExec(args...)
 }
 
 // MustExecContext
-func (c *customStmt) MustExecContext(ctx context.Context, args ...interface{}) sql.Result {
+func (c *customStmt) MustExecContext(ctx context.Context, args ...any) sql.Result {
 	return c.stmt.MustExecContext(ctx, args...)
 }
 
 // QueryRow
-func (c *customStmt) QueryRow(args ...interface{}) Row {
+func (c *customStmt) QueryRow(args ...any) Row {
 	return &customRow{row: c.stmt.QueryRowx(args...)}
 }
 
 // QueryRowContext
-func (c *customStmt) QueryRowContext(ctx context.Context, args ...interface{}) Row {
+func (c *customStmt) QueryRowContext(ctx context.Context, args ...any) Row {
 	return &customRow{row: c.stmt.QueryRowxContext(ctx, args...)}
 }
 
 // Query
-func (c *customStmt) Query(args ...interface{}) (Rows, error) {
+func (c *customStmt) Query(args ...any) (Rows, error) {
 	if rows, err := c.query(args...); err != nil {
 		return &customRows{}, err
 	} else {
@@ -138,7 +138,7 @@ func (c *customStmt) Query(args ...interface{}) (Rows, error) {
 }
 
 // query
-func (c *customStmt) query(args ...interface{}) (*sqlx.Rows, error) {
+func (c *customStmt) query(args ...any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -146,7 +146,7 @@ func (c *customStmt) query(args ...interface{}) (*sqlx.Rows, error) {
 }
 
 // QueryContext
-func (c *customStmt) QueryContext(ctx context.Context, args ...interface{}) (Rows, error) {
+func (c *customStmt) QueryContext(ctx context.Context, args ...any) (Rows, error) {
 	if rows, err := c.queryContext(ctx, args...); err != nil {
 		return &customRows{}, err
 	} else {
@@ -155,7 +155,7 @@ func (c *customStmt) QueryContext(ctx context.Context, args ...interface{}) (Row
 }
 
 // queryContext
-func (c *customStmt) queryContext(ctx context.Context, args ...interface{}) (*sqlx.Rows, error) {
+func (c *customStmt) queryContext(ctx context.Context, args ...any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -163,12 +163,12 @@ func (c *customStmt) queryContext(ctx context.Context, args ...interface{}) (*sq
 }
 
 // Select
-func (c *customStmt) Select(dest interface{}, args ...interface{}) error {
+func (c *customStmt) Select(dest any, args ...any) error {
 	return c.stmt.Select(dest, args...)
 }
 
 // SelectContext
-func (c *customStmt) SelectContext(ctx context.Context, dest interface{}, args ...interface{}) error {
+func (c *customStmt) SelectContext(ctx context.Context, dest any, args ...any) error {
 	return c.stmt.SelectContext(ctx, dest, args...)
 }
 

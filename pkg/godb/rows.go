@@ -53,7 +53,7 @@ type Rows interface {
 	//	*uint, *uint8, *uint16, *uint32, *uint64
 	//	*bool
 	//	*float32, *float64
-	//	*interface{}
+	//	*any
 	//	*RawBytes
 	//	*Rows (cursor value)
 	//	any type implementing Scanner (see Scanner docs)
@@ -78,17 +78,17 @@ type Rows interface {
 	// using an argument of type *RawBytes instead; see the documentation
 	// for RawBytes for restrictions on its use.
 	//
-	// If an argument has type *interface{}, Scan copies the value
+	// If an argument has type *any, Scan copies the value
 	// provided by the underlying driver without conversion. When scanning
-	// from a source value of type []byte to *interface{}, a copy of the
+	// from a source value of type []byte to *any, a copy of the
 	// slice is made and the caller owns the result.
 	//
 	// Source values of type time.Time may be scanned into values of type
-	// *time.Time, *interface{}, *string, or *[]byte. When converting to
+	// *time.Time, *any, *string, or *[]byte. When converting to
 	// the latter two, time.RFC3339Nano is used.
 	//
 	// Source values of type bool may be scanned into types *bool,
-	// *interface{}, *string, *[]byte, or *RawBytes.
+	// *any, *string, *[]byte, or *RawBytes.
 	//
 	// For scanning into *bool, the source may be true, false, 1, 0, or
 	// string inputs parseable by strconv.ParseBool.
@@ -105,15 +105,15 @@ type Rows interface {
 	// sqlx
 
 	// MapScan using this Rows.
-	MapScan(dest map[string]interface{}) error
+	MapScan(dest map[string]any) error
 	// SliceScan using this Rows.
-	SliceScan() ([]interface{}, error)
+	SliceScan() ([]any, error)
 	// StructScan is like sql.Rows.Scan, but scans a single Row into a single Struct.
 	// Use this and iterate over Rows manually when the memory load of Select() might be
 	// prohibitive.  *Rows.StructScan caches the reflect work of matching up column
 	// positions to fields to avoid that overhead per scan, which means it is not safe
 	// to run StructScan on the same Rows instance with different struct types.
-	StructScan(dest interface{}) error
+	StructScan(dest any) error
 }
 
 // customRows implements the Rows interface
@@ -157,16 +157,16 @@ func (r *customRows) Scan(dest ...any) error {
 }
 
 // MapScan
-func (r *customRows) MapScan(dest map[string]interface{}) error {
+func (r *customRows) MapScan(dest map[string]any) error {
 	return r.rows.MapScan(dest)
 }
 
 // SliceScan
-func (r *customRows) SliceScan() ([]interface{}, error) {
+func (r *customRows) SliceScan() ([]any, error) {
 	return r.rows.SliceScan()
 }
 
 // StructScan
-func (r *customRows) StructScan(dest interface{}) error {
+func (r *customRows) StructScan(dest any) error {
 	return r.rows.StructScan(dest)
 }
