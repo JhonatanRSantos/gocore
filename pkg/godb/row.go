@@ -18,14 +18,14 @@ type Row interface {
 	// Err returns the error encountered while scanning
 	Err() error
 	// MapScan using this Rows
-	MapScan(dest map[string]interface{}) error
+	MapScan(dest map[string]any) error
 	// Scan is a fixed implementation of sql.Row.Scan, which does not discard the
 	// underlying error from the internal rows object if it exists
-	Scan(dest ...interface{}) error
+	Scan(dest ...any) error
 	// SliceScan using this Rows
-	SliceScan() ([]interface{}, error)
+	SliceScan() ([]any, error)
 	// StructScan a single Row into dest
-	StructScan(dest interface{}) error
+	StructScan(dest any) error
 }
 
 // customRow implements the Row interface
@@ -49,21 +49,21 @@ func (c *customRow) Err() error {
 }
 
 // Scan
-func (c *customRow) Scan(dest ...interface{}) error {
+func (c *customRow) Scan(dest ...any) error {
 	return c.row.Scan(dest...)
 }
 
 // MapScan
-func (c *customRow) MapScan(dest map[string]interface{}) error {
+func (c *customRow) MapScan(dest map[string]any) error {
 	return c.row.MapScan(dest)
 }
 
 // SliceScan
-func (c *customRow) SliceScan() ([]interface{}, error) {
+func (c *customRow) SliceScan() ([]any, error) {
 	return c.row.SliceScan()
 }
 
 // StructScan
-func (c *customRow) StructScan(dest interface{}) error {
+func (c *customRow) StructScan(dest any) error {
 	return c.row.StructScan(dest)
 }

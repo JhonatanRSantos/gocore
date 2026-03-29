@@ -28,32 +28,32 @@ type Tx interface {
 	// sqlx.Tx
 
 	// BindNamed binds a query within a transaction's bindvar type.
-	BindNamed(query string, arg interface{}) (string, []interface{}, error)
+	BindNamed(query string, arg any) (string, []any, error)
 	// DriverName returns the driverName used by the DB which began this transaction.
 	DriverName() string
 	// Get within a transaction.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	Get(dest interface{}, query string, args ...interface{}) error
+	Get(dest any, query string, args ...any) error
 	// GetContext within a transaction and context.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest any, query string, args ...any) error
 	// MustExec runs MustExec within a transaction.
 	// Any placeholder parameters are replaced with supplied args.
-	MustExec(query string, args ...interface{}) sql.Result
+	MustExec(query string, args ...any) sql.Result
 	// MustExecContext runs MustExecContext within a transaction.
 	// Any placeholder parameters are replaced with supplied args.
-	MustExecContext(ctx context.Context, query string, args ...interface{}) sql.Result
+	MustExecContext(ctx context.Context, query string, args ...any) sql.Result
 	// NamedExec a named query within a transaction.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedExec(query string, arg any) (sql.Result, error)
 	// NamedExecContext using this Tx.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	NamedExecContext(ctx context.Context, query string, arg any) (sql.Result, error)
 	// NamedQuery within a transaction.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedQuery(query string, arg interface{}) (Rows, error)
+	NamedQuery(query string, arg any) (Rows, error)
 	// NamedStmt returns a version of the prepared statement which runs within a transaction.
 	NamedStmt(stmt NamedStmt) NamedStmt
 	// NamedStmtContext returns a version of the prepared statement which runs
@@ -72,30 +72,30 @@ type Tx interface {
 	PrepareContext(ctx context.Context, query string) (Stmt, error)
 	// QueryRow within a transaction.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRow(query string, args ...interface{}) Row
+	QueryRow(query string, args ...any) Row
 	// QueryRowContext within a transaction and context.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) Row
+	QueryRowContext(ctx context.Context, query string, args ...any) Row
 	// Query within a transaction.
 	// Any placeholder parameters are replaced with supplied args.
-	Query(query string, args ...interface{}) (Rows, error)
+	Query(query string, args ...any) (Rows, error)
 	// QueryContext within a transaction and context.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error)
+	QueryContext(ctx context.Context, query string, args ...any) (Rows, error)
 	// Rebind a query within a transaction's bindvar type.
 	Rebind(query string) string
 	// Select within a transaction.
 	// Any placeholder parameters are replaced with supplied args.
-	Select(dest interface{}, query string, args ...interface{}) error
+	Select(dest any, query string, args ...any) error
 	// SelectContext within a transaction and context.
 	// Any placeholder parameters are replaced with supplied args.
-	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	SelectContext(ctx context.Context, dest any, query string, args ...any) error
 	// Stmt returns a version of the prepared statement which runs within a transaction.  Provided
 	// stmt can be either *sql.Stmt or *sqlx.Stmt.
-	Stmt(stmt interface{}) Stmt
+	Stmt(stmt any) Stmt
 	// StmtContext returns a version of the prepared statement which runs within a
 	// transaction. Provided stmt can be either *sql.Stmt or *sqlx.Stmt.
-	StmtContext(ctx context.Context, stmt interface{}) Stmt
+	StmtContext(ctx context.Context, stmt any) Stmt
 	// Unsafe returns a version of Tx which will silently succeed to scan when
 	// columns in the SQL result have no fields in the destination struct.
 	Unsafe() *sqlx.Tx
@@ -142,7 +142,7 @@ func (c *customTx) Rollback() error {
 }
 
 // BindNamed
-func (c *customTx) BindNamed(query string, arg interface{}) (string, []interface{}, error) {
+func (c *customTx) BindNamed(query string, arg any) (string, []any, error) {
 	return c.tx.BindNamed(query, arg)
 }
 
@@ -152,46 +152,46 @@ func (c *customTx) DriverName() string {
 }
 
 // Get
-func (c *customTx) Get(dest interface{}, query string, args ...interface{}) error {
+func (c *customTx) Get(dest any, query string, args ...any) error {
 	return c.tx.Get(dest, query, args...)
 }
 
 // GetContext
-func (c *customTx) GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (c *customTx) GetContext(ctx context.Context, dest any, query string, args ...any) error {
 	return c.tx.GetContext(ctx, dest, query, args...)
 }
 
 // MustExec
-func (c *customTx) MustExec(query string, args ...interface{}) sql.Result {
+func (c *customTx) MustExec(query string, args ...any) sql.Result {
 	return c.tx.MustExec(query, args...)
 }
 
 // MustExecContext
-func (c *customTx) MustExecContext(ctx context.Context, query string, args ...interface{}) sql.Result {
+func (c *customTx) MustExecContext(ctx context.Context, query string, args ...any) sql.Result {
 	return c.tx.MustExecContext(ctx, query, args...)
 }
 
 // NamedExec
-func (c *customTx) NamedExec(query string, arg interface{}) (sql.Result, error) {
+func (c *customTx) NamedExec(query string, arg any) (sql.Result, error) {
 	return c.tx.NamedExec(query, arg)
 }
 
 // NamedExecContext
-func (c *customTx) NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+func (c *customTx) NamedExecContext(ctx context.Context, query string, arg any) (sql.Result, error) {
 	return c.tx.NamedExecContext(ctx, query, arg)
 }
 
 // NamedQuery
-func (c *customTx) NamedQuery(query string, arg interface{}) (Rows, error) {
-	if rows, err := c.namedQuery(query, arg); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (c *customTx) NamedQuery(query string, arg any) (Rows, error) {
+	rows, err := c.namedQuery(query, arg)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // namedQuery
-func (c *customTx) namedQuery(query string, arg interface{}) (*sqlx.Rows, error) {
+func (c *customTx) namedQuery(query string, arg any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -210,11 +210,11 @@ func (c *customTx) NamedStmtContext(ctx context.Context, stmt NamedStmt) NamedSt
 
 // PrepareNamed
 func (c *customTx) PrepareNamed(query string) (NamedStmt, error) {
-	if namedStmt, err := c.prepareNamed(query); err != nil {
-		return &customNamedStmt{}, err
-	} else {
-		return &customNamedStmt{namedStmt: namedStmt}, nil
+	namedStmt, err := c.prepareNamed(query)
+	if err != nil {
+		return nil, err
 	}
+	return &customNamedStmt{namedStmt: namedStmt}, nil
 }
 
 // prepareNamed
@@ -227,11 +227,11 @@ func (c *customTx) prepareNamed(query string) (*sqlx.NamedStmt, error) {
 
 // PrepareNamedContext
 func (c *customTx) PrepareNamedContext(ctx context.Context, query string) (NamedStmt, error) {
-	if namedStmt, err := c.prepareNamedContext(ctx, query); err != nil {
-		return &customNamedStmt{}, err
-	} else {
-		return &customNamedStmt{namedStmt: namedStmt}, nil
+	namedStmt, err := c.prepareNamedContext(ctx, query)
+	if err != nil {
+		return nil, err
 	}
+	return &customNamedStmt{namedStmt: namedStmt}, nil
 }
 
 // prepareNamedContext
@@ -244,11 +244,11 @@ func (c *customTx) prepareNamedContext(ctx context.Context, query string) (*sqlx
 
 // Prepare
 func (c *customTx) Prepare(query string) (Stmt, error) {
-	if stmt, err := c.prepare(query); err != nil {
-		return &customStmt{}, err
-	} else {
-		return &customStmt{stmt: stmt}, nil
+	stmt, err := c.prepare(query)
+	if err != nil {
+		return nil, err
 	}
+	return &customStmt{stmt: stmt}, nil
 }
 
 // prepare
@@ -261,11 +261,11 @@ func (c *customTx) prepare(query string) (*sqlx.Stmt, error) {
 
 // PrepareContext
 func (c *customTx) PrepareContext(ctx context.Context, query string) (Stmt, error) {
-	if stmt, err := c.prepareContext(ctx, query); err != nil {
-		return &customStmt{}, err
-	} else {
-		return &customStmt{stmt: stmt}, nil
+	stmt, err := c.prepareContext(ctx, query)
+	if err != nil {
+		return nil, err
 	}
+	return &customStmt{stmt: stmt}, nil
 }
 
 // prepareContext
@@ -277,26 +277,26 @@ func (c *customTx) prepareContext(ctx context.Context, query string) (*sqlx.Stmt
 }
 
 // QueryRow
-func (c *customTx) QueryRow(query string, args ...interface{}) Row {
+func (c *customTx) QueryRow(query string, args ...any) Row {
 	return &customRow{row: c.tx.QueryRowx(query, args...)}
 }
 
 // QueryRowContext
-func (c *customTx) QueryRowContext(ctx context.Context, query string, args ...interface{}) Row {
+func (c *customTx) QueryRowContext(ctx context.Context, query string, args ...any) Row {
 	return &customRow{row: c.tx.QueryRowxContext(ctx, query, args...)}
 }
 
 // Query
-func (c *customTx) Query(query string, args ...interface{}) (Rows, error) {
-	if rows, err := c.query(query, args...); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (c *customTx) Query(query string, args ...any) (Rows, error) {
+	rows, err := c.query(query, args...)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // query
-func (c *customTx) query(query string, args ...interface{}) (*sqlx.Rows, error) {
+func (c *customTx) query(query string, args ...any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -304,16 +304,16 @@ func (c *customTx) query(query string, args ...interface{}) (*sqlx.Rows, error) 
 }
 
 // QueryContext
-func (c *customTx) QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error) {
-	if rows, err := c.queryContext(ctx, query, args...); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (c *customTx) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
+	rows, err := c.queryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // queryContext
-func (c *customTx) queryContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+func (c *customTx) queryContext(ctx context.Context, query string, args ...any) (*sqlx.Rows, error) {
 	if c.testErr != nil {
 		return &sqlx.Rows{}, c.popTestError()
 	}
@@ -326,22 +326,22 @@ func (c *customTx) Rebind(query string) string {
 }
 
 // Select
-func (c *customTx) Select(dest interface{}, query string, args ...interface{}) error {
+func (c *customTx) Select(dest any, query string, args ...any) error {
 	return c.tx.Select(dest, query, args...)
 }
 
 // SelectContext
-func (c *customTx) SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (c *customTx) SelectContext(ctx context.Context, dest any, query string, args ...any) error {
 	return c.tx.SelectContext(ctx, dest, query, args...)
 }
 
 // Stmt
-func (c *customTx) Stmt(stmt interface{}) Stmt {
+func (c *customTx) Stmt(stmt any) Stmt {
 	return &customStmt{stmt: c.tx.Stmtx(stmt)}
 }
 
 // StmtContext
-func (c *customTx) StmtContext(ctx context.Context, stmt interface{}) Stmt {
+func (c *customTx) StmtContext(ctx context.Context, stmt any) Stmt {
 	return &customStmt{stmt: c.tx.StmtxContext(ctx, stmt)}
 }
 

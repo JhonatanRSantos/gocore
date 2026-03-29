@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -28,7 +28,7 @@ var (
 
 	validDBTypes = map[DBType]string{
 		MySQLDB:    "mysql",
-		PostgresDB: "postgres",
+		PostgresDB: "pgx",
 		SQLiteDB:   "sqlite3",
 	}
 
@@ -55,8 +55,13 @@ var (
 	}
 )
 
-// NewDB Returns a new database connection
+// NewDB Returns a new database connection using context.Background()
 func NewDB(config DBConfig) (DB, error) {
+	return NewDBWithContext(context.Background(), config)
+}
+
+// NewDBWithContext Returns a new database connection with a custom context
+func NewDBWithContext(ctx context.Context, config DBConfig) (DB, error) {
 	if !config.DatabaseType.isValid() {
 		return nil, ErrInvalidDBType
 	}
@@ -65,43 +70,30 @@ func NewDB(config DBConfig) (DB, error) {
 		config.ConnectTimeout = defaultTimeout
 	}
 
-	ctx := context.Background()
 	dsn := config.dsn()
 	dbType := config.DatabaseType.String()
 
 	ctx, cancel := context.WithTimeout(ctx, config.ConnectTimeout)
 
-	if dbx, err := connect(ctx, cancel, dbType, dsn); err != nil {
-		return &customDB{}, err
-	} else {
-		return &customDB{db: dbx}, nil
+	dbx, err := connect(ctx, cancel, dbType, dsn)
+	if err != nil {
+		return nil, err
 	}
+	return &customDB{db: dbx}, nil
 }
 
-// connect Open a new databse connection
+// connect Open a new database connection
 func connect(ctx context.Context, cancel context.CancelFunc, dbType, dsn string) (*sqlx.DB, error) {
 	defer cancel()
-	var (
-		db  *sqlx.DB
-		err error
-	)
 
-	go func() {
-		db, err = sqlx.ConnectContext(ctx, dbType, dsn)
-	}()
-
-	<-ctx.Done()
-	switch {
-	case err != nil:
+	db, err := sqlx.ConnectContext(ctx, dbType, dsn)
+	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, ErrConnectionTimeoutExceeded
 		}
 		return nil, err
-	case db != nil:
-		return db, nil
-	default:
-		return nil, ErrConnectionTimeoutExceeded
 	}
+	return db, nil
 }
 
 type DBType uint
@@ -202,7 +194,7 @@ type DB interface {
 	// Begin begins a transaction and returns an godb.Tx instead of an *sql.Tx.
 	Begin() (Tx, error)
 	// BindNamed binds a query using the DB driver's bindvar type.
-	BindNamed(query string, arg interface{}) (string, []interface{}, error)
+	BindNamed(query string, arg any) (string, []any, error)
 	// Conn returns an godb.Conn instead of an *sql.Conn.
 	Conn(ctx context.Context) (Conn, error)
 	// DriverName returns the driverName passed to the Open function for this DB.
@@ -210,11 +202,11 @@ type DB interface {
 	// Get using this DB.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	Get(dest interface{}, query string, args ...interface{}) error
+	Get(dest any, query string, args ...any) error
 	// GetContext using this DB.
 	// Any placeholder parameters are replaced with supplied args.
 	// An error is returned if the result set is empty.
-	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest any, query string, args ...any) error
 	// MapperFunc sets a new mapper for this db using the default sqlx struct tag
 	// and the provided mapper function.
 	MapperFunc(mf func(string) string)
@@ -231,22 +223,22 @@ type DB interface {
 	MustBeginTx(ctx context.Context, opts *sql.TxOptions) Tx
 	// MustExec (panic) runs MustExec using this database.
 	// Any placeholder parameters are replaced with supplied args.
-	MustExec(query string, args ...interface{}) sql.Result
+	MustExec(query string, args ...any) sql.Result
 	// MustExecContext (panic) runs MustExec using this database.
 	// Any placeholder parameters are replaced with supplied args.
-	MustExecContext(ctx context.Context, query string, args ...interface{}) sql.Result
+	MustExecContext(ctx context.Context, query string, args ...any) sql.Result
 	// NamedExec using this DB.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedExec(query string, arg any) (sql.Result, error)
 	// NamedExecContext using this DB.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	NamedExecContext(ctx context.Context, query string, arg any) (sql.Result, error)
 	// NamedQuery using this DB.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedQuery(query string, arg interface{}) (Rows, error)
+	NamedQuery(query string, arg any) (Rows, error)
 	// NamedQueryContext using this DB.
 	// Any named placeholder parameters are replaced with fields from arg.
-	NamedQueryContext(ctx context.Context, query string, arg interface{}) (Rows, error)
+	NamedQueryContext(ctx context.Context, query string, arg any) (Rows, error)
 	// PrepareNamed returns an godb.NamedStmt
 	PrepareNamed(query string) (NamedStmt, error)
 	// PrepareNamedContext returns an godb.NamedStmt
@@ -260,24 +252,24 @@ type DB interface {
 	PrepareContext(ctx context.Context, query string) (Stmt, error)
 	// QueryRow queries the database and returns an Row.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRow(query string, args ...interface{}) Row
+	QueryRow(query string, args ...any) Row
 	// QueryRowContext queries the database and returns an Row.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) Row
+	QueryRowContext(ctx context.Context, query string, args ...any) Row
 	// Query queries the database and returns an Rows.
 	// Any placeholder parameters are replaced with supplied args.
-	Query(query string, args ...interface{}) (Rows, error)
+	Query(query string, args ...any) (Rows, error)
 	// QueryContext queries the database and returns an Rows.
 	// Any placeholder parameters are replaced with supplied args.
-	QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error)
+	QueryContext(ctx context.Context, query string, args ...any) (Rows, error)
 	// Rebind transforms a query from QUESTION to the DB driver's bindvar type.
 	Rebind(query string) string
 	// Select using this DB.
 	// Any placeholder parameters are replaced with supplied args.
-	Select(dest interface{}, query string, args ...interface{}) error
+	Select(dest any, query string, args ...any) error
 	// SelectContext using this DB.
 	// Any placeholder parameters are replaced with supplied args.
-	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	SelectContext(ctx context.Context, dest any, query string, args ...any) error
 	// Unsafe returns a version of DB which will silently succeed to scan when
 	// columns in the SQL result have no fields in the destination struct.
 	// godb.Stmt and godb.Tx which are created from this DB will inherit its
@@ -362,7 +354,7 @@ func prepareConnectionParams(connectionParams DBConnectionParams) string {
 	return params
 }
 
-// Inplements database interface
+// Implements database interface
 type customDB struct {
 	db      *sqlx.DB
 	testErr error
@@ -437,11 +429,11 @@ func (cdb *customDB) Stats() sql.DBStats {
 
 // BeginTx
 func (cdb *customDB) BeginTx(ctx context.Context, opts *sql.TxOptions) (Tx, error) {
-	if tx, err := cdb.beginTx(ctx, opts); err != nil {
-		return &customTx{}, err
-	} else {
-		return &customTx{tx: tx}, nil
+	tx, err := cdb.beginTx(ctx, opts)
+	if err != nil {
+		return nil, err
 	}
+	return &customTx{tx: tx}, nil
 }
 
 // beginTx
@@ -454,11 +446,11 @@ func (cdb *customDB) beginTx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx
 
 // Begin
 func (cdb *customDB) Begin() (Tx, error) {
-	if tx, err := cdb.begin(); err != nil {
-		return &customTx{}, err
-	} else {
-		return &customTx{tx: tx}, nil
+	tx, err := cdb.begin()
+	if err != nil {
+		return nil, err
 	}
+	return &customTx{tx: tx}, nil
 }
 
 // begin
@@ -470,17 +462,17 @@ func (cdb *customDB) begin() (*sqlx.Tx, error) {
 }
 
 // BindNamed
-func (cdb *customDB) BindNamed(query string, arg interface{}) (string, []interface{}, error) {
+func (cdb *customDB) BindNamed(query string, arg any) (string, []any, error) {
 	return cdb.db.BindNamed(query, arg)
 }
 
 // Conn
 func (cdb *customDB) Conn(ctx context.Context) (Conn, error) {
-	if conn, err := cdb.conn(ctx); err != nil {
-		return &customConn{}, err
-	} else {
-		return &customConn{conn: conn}, nil
+	conn, err := cdb.conn(ctx)
+	if err != nil {
+		return nil, err
 	}
+	return &customConn{conn: conn}, nil
 }
 
 // conn
@@ -497,12 +489,12 @@ func (cdb *customDB) DriverName() string {
 }
 
 // Get
-func (cdb *customDB) Get(dest interface{}, query string, args ...interface{}) error {
+func (cdb *customDB) Get(dest any, query string, args ...any) error {
 	return cdb.db.Get(dest, query, args...)
 }
 
 // GetContext
-func (cdb *customDB) GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (cdb *customDB) GetContext(ctx context.Context, dest any, query string, args ...any) error {
 	return cdb.db.GetContext(ctx, dest, query, args...)
 }
 
@@ -522,36 +514,36 @@ func (cdb *customDB) MustBeginTx(ctx context.Context, opts *sql.TxOptions) Tx {
 }
 
 // MustExec
-func (cdb *customDB) MustExec(query string, args ...interface{}) sql.Result {
+func (cdb *customDB) MustExec(query string, args ...any) sql.Result {
 	return cdb.db.MustExec(query, args...)
 }
 
 // MustExecContext
-func (cdb *customDB) MustExecContext(ctx context.Context, query string, args ...interface{}) sql.Result {
+func (cdb *customDB) MustExecContext(ctx context.Context, query string, args ...any) sql.Result {
 	return cdb.db.MustExecContext(ctx, query, args...)
 }
 
 // NamedExec
-func (cdb *customDB) NamedExec(query string, arg interface{}) (sql.Result, error) {
+func (cdb *customDB) NamedExec(query string, arg any) (sql.Result, error) {
 	return cdb.db.NamedExec(query, arg)
 }
 
 // NamedExecContext
-func (cdb *customDB) NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+func (cdb *customDB) NamedExecContext(ctx context.Context, query string, arg any) (sql.Result, error) {
 	return cdb.db.NamedExecContext(ctx, query, arg)
 }
 
 // NamedQuery
-func (cdb *customDB) NamedQuery(query string, arg interface{}) (Rows, error) {
-	if rows, err := cdb.namedQuery(query, arg); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (cdb *customDB) NamedQuery(query string, arg any) (Rows, error) {
+	rows, err := cdb.namedQuery(query, arg)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // namedQuery
-func (cdb *customDB) namedQuery(query string, arg interface{}) (*sqlx.Rows, error) {
+func (cdb *customDB) namedQuery(query string, arg any) (*sqlx.Rows, error) {
 	if cdb.testErr != nil {
 		return &sqlx.Rows{}, cdb.popTestError()
 	}
@@ -559,16 +551,16 @@ func (cdb *customDB) namedQuery(query string, arg interface{}) (*sqlx.Rows, erro
 }
 
 // NamedQueryContext
-func (cdb *customDB) NamedQueryContext(ctx context.Context, query string, arg interface{}) (Rows, error) {
-	if rows, err := cdb.namedQueryContext(ctx, query, arg); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (cdb *customDB) NamedQueryContext(ctx context.Context, query string, arg any) (Rows, error) {
+	rows, err := cdb.namedQueryContext(ctx, query, arg)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // namedQueryContext
-func (cdb *customDB) namedQueryContext(ctx context.Context, query string, arg interface{}) (*sqlx.Rows, error) {
+func (cdb *customDB) namedQueryContext(ctx context.Context, query string, arg any) (*sqlx.Rows, error) {
 	if cdb.testErr != nil {
 		return &sqlx.Rows{}, cdb.popTestError()
 	}
@@ -577,11 +569,11 @@ func (cdb *customDB) namedQueryContext(ctx context.Context, query string, arg in
 
 // PrepareNamed
 func (cdb *customDB) PrepareNamed(query string) (NamedStmt, error) {
-	if namedStmt, err := cdb.prepareNamed(query); err != nil {
-		return &customNamedStmt{}, err
-	} else {
-		return &customNamedStmt{namedStmt: namedStmt}, nil
+	namedStmt, err := cdb.prepareNamed(query)
+	if err != nil {
+		return nil, err
 	}
+	return &customNamedStmt{namedStmt: namedStmt}, nil
 }
 
 // prepareNamed
@@ -594,11 +586,11 @@ func (cdb *customDB) prepareNamed(query string) (*sqlx.NamedStmt, error) {
 
 // PrepareNamedContext
 func (cdb *customDB) PrepareNamedContext(ctx context.Context, query string) (NamedStmt, error) {
-	if namedStmt, err := cdb.prepareNamedContext(ctx, query); err != nil {
-		return &customNamedStmt{}, err
-	} else {
-		return &customNamedStmt{namedStmt: namedStmt}, nil
+	namedStmt, err := cdb.prepareNamedContext(ctx, query)
+	if err != nil {
+		return nil, err
 	}
+	return &customNamedStmt{namedStmt: namedStmt}, nil
 }
 
 // prepareNamedContext
@@ -611,11 +603,11 @@ func (cdb *customDB) prepareNamedContext(ctx context.Context, query string) (*sq
 
 // Prepare
 func (cdb *customDB) Prepare(query string) (Stmt, error) {
-	if stmt, err := cdb.prepare(query); err != nil {
-		return &customStmt{}, err
-	} else {
-		return &customStmt{stmt: stmt}, nil
+	stmt, err := cdb.prepare(query)
+	if err != nil {
+		return nil, err
 	}
+	return &customStmt{stmt: stmt}, nil
 }
 
 // prepare
@@ -628,11 +620,11 @@ func (cdb *customDB) prepare(query string) (*sqlx.Stmt, error) {
 
 // PrepareContext
 func (cdb *customDB) PrepareContext(ctx context.Context, query string) (Stmt, error) {
-	if stmt, err := cdb.prepareContext(ctx, query); err != nil {
-		return &customStmt{}, err
-	} else {
-		return &customStmt{stmt: stmt}, nil
+	stmt, err := cdb.prepareContext(ctx, query)
+	if err != nil {
+		return nil, err
 	}
+	return &customStmt{stmt: stmt}, nil
 }
 
 // prepareContext
@@ -644,26 +636,26 @@ func (cdb *customDB) prepareContext(ctx context.Context, query string) (*sqlx.St
 }
 
 // QueryRow
-func (cdb *customDB) QueryRow(query string, args ...interface{}) Row {
+func (cdb *customDB) QueryRow(query string, args ...any) Row {
 	return &customRow{row: cdb.db.QueryRowx(query, args...)}
 }
 
 // QueryRowContext
-func (cdb *customDB) QueryRowContext(ctx context.Context, query string, args ...interface{}) Row {
+func (cdb *customDB) QueryRowContext(ctx context.Context, query string, args ...any) Row {
 	return &customRow{row: cdb.db.QueryRowxContext(ctx, query, args...)}
 }
 
 // Query
-func (cdb *customDB) Query(query string, args ...interface{}) (Rows, error) {
-	if rows, err := cdb.query(query, args...); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (cdb *customDB) Query(query string, args ...any) (Rows, error) {
+	rows, err := cdb.query(query, args...)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // query
-func (cdb *customDB) query(query string, args ...interface{}) (*sqlx.Rows, error) {
+func (cdb *customDB) query(query string, args ...any) (*sqlx.Rows, error) {
 	if cdb.testErr != nil {
 		return &sqlx.Rows{}, cdb.popTestError()
 	}
@@ -671,16 +663,16 @@ func (cdb *customDB) query(query string, args ...interface{}) (*sqlx.Rows, error
 }
 
 // QueryContext
-func (cdb *customDB) QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error) {
-	if rows, err := cdb.queryContext(ctx, query, args...); err != nil {
-		return &customRows{}, err
-	} else {
-		return &customRows{rows: rows}, nil
+func (cdb *customDB) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
+	rows, err := cdb.queryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
 	}
+	return &customRows{rows: rows}, nil
 }
 
 // queryContext
-func (cdb *customDB) queryContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+func (cdb *customDB) queryContext(ctx context.Context, query string, args ...any) (*sqlx.Rows, error) {
 	if cdb.testErr != nil {
 		return &sqlx.Rows{}, cdb.popTestError()
 	}
@@ -693,12 +685,12 @@ func (cdb *customDB) Rebind(query string) string {
 }
 
 // Select
-func (cdb *customDB) Select(dest interface{}, query string, args ...interface{}) error {
+func (cdb *customDB) Select(dest any, query string, args ...any) error {
 	return cdb.db.Select(dest, query, args...)
 }
 
 // SelectContext
-func (cdb *customDB) SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (cdb *customDB) SelectContext(ctx context.Context, dest any, query string, args ...any) error {
 	return cdb.db.SelectContext(ctx, dest, query, args...)
 }
 
